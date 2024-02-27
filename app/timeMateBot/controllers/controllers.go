@@ -10,16 +10,10 @@ import (
 	"timeMate_bot/app/timeMateBot/session"
 	"timeMate_bot/storage"
 	"timeMate_bot/use_cases"
+	"unicode/utf8"
 )
 
-var tagsKeyboard = tgbotapi.NewReplyKeyboard(
-	tgbotapi.NewKeyboardButtonRow(
-		tgbotapi.NewKeyboardButton("суета"),
-		tgbotapi.NewKeyboardButton("работа"),
-		tgbotapi.NewKeyboardButton("цифра"),
-		tgbotapi.NewKeyboardButton("сон"),
-	),
-)
+var tagsKeyboard = keyboardConfig([]string{"суета", "работа", "цифра", "сон"})
 
 func AddEventProcessing(bot *tgbotapi.BotAPI, session *session.LocalMemory, db *storage.Store, update tgbotapi.Update) {
 	_ = session.LastMove.Reset()
@@ -203,8 +197,14 @@ func CommandProcessing(bot *tgbotapi.BotAPI, session *session.LocalMemory, db *s
 	//case "stat":
 	//	msg.Text = "Скоро завезу"
 	case "keyboard":
-		msg.Text = fmt.Sprintf("Твоя клавиатура:\n")
-		msg.ReplyMarkup = tagsKeyboard
+		cArgs := update.Message.CommandArguments()
+		if cArgs == "" {
+			msg.Text = fmt.Sprintf("Клавиатура добавлена\n")
+			msg.ReplyMarkup = tagsKeyboard
+		} else {
+			msg.Text = fmt.Sprintf("Клавиатура обновлена\n")
+			msg.ReplyMarkup = keyboardConfig(strings.Split(cArgs, " "))
+		}
 	case "history":
 		t1 := truncateToDay(time.Now())
 		t2 := t1.AddDate(0, 0, 1)
@@ -229,7 +229,23 @@ func CommandProcessing(bot *tgbotapi.BotAPI, session *session.LocalMemory, db *s
 	}
 }
 
-func SendPremisionDenied(bot *tgbotapi.BotAPI, chatId int64) {
+func keyboardConfig(buttons []string) tgbotapi.ReplyKeyboardMarkup {
+	kbb := make([]tgbotapi.KeyboardButton, 0, len(buttons))
+
+	for _, btn := range buttons {
+		// todo сделать нормальную обработку ошибки (как минимум уведомить пользователя)
+		if !utf8.ValidString(btn) {
+			continue
+		}
+		kbb = append(kbb, tgbotapi.NewKeyboardButton(btn))
+	}
+
+	return tgbotapi.NewReplyKeyboard(
+		tgbotapi.NewKeyboardButtonRow(kbb...),
+	)
+}
+
+func SendPermissionDenied(bot *tgbotapi.BotAPI, chatId int64) {
 	msg := tgbotapi.NewMessage(chatId, "Я тебя не знаю")
 	if _, err := bot.Send(msg); err != nil {
 		log.Panic(err)
