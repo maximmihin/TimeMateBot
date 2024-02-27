@@ -1,0 +1,38 @@
+{
+    "tags" : [
+      {
+        "id": 1,
+        "tag": "lol"
+      },
+      {
+        "id": 2,
+        "tag": "kek",
+        "comment": "arbidol"
+      },
+      {
+        "id": 3,
+        "tag": "what",
+        "comment": "tf"
+      }
+    ],
+    "events" : [
+      {
+        "id": 1,
+        "tag": 1,
+        "date": 1707130720,
+        "comment": "some comment 0"
+      },
+      {
+        "id": 2,
+        "tag": 2,
+        "date": 1707217120,
+        "comment": "some comment 1"
+      },
+      {
+        "id": 3,
+        "tag": 2,
+        "date": 1707303520,
+        "comment": "some comment 2"
+      }
+    ]
+}
